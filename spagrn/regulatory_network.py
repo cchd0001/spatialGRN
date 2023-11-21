@@ -17,7 +17,6 @@ import warnings
 import json
 import glob
 import anndata
-import hotspot
 import pickle
 import pandas as pd
 from copy import deepcopy
@@ -469,6 +468,7 @@ class InferNetwork(Network):
         :param fn: output file name
         :return: A dataframe, local correlation Z-scores between genes (shape is genes x genes)
         """
+        import hotspot
         if cache and os.path.isfile(fn):
             local_correlations = pd.read_csv(fn)
             self.data.uns['adj'] = local_correlations
