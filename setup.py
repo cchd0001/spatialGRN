@@ -19,14 +19,10 @@ setuptools.setup(
         "scanpy==1.9.1",
         "seaborn",
         "matplotlib",
-        "pyscenic==0.12.1",
-        "hotspotsc==1.1.1",
         "scipy",
         #"numpy<1.20.0,>=1.16.6",
         "numpy",
         "dask",
-        "arboreto",
-        "ctxcore>=0.2.0",
         "scikit-learn"
     ],
     classifiers=[
