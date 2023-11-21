@@ -23,23 +23,15 @@ import pandas as pd
 from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import Sequence, Type, Optional
-
 from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster
-
-from ctxcore.genesig import Regulon, GeneSignature
-from arboreto.algo import grnboost2
-from ctxcore.rnkdb import FeatherRankingDatabase as RankingDatabase
-from pyscenic.utils import modules_from_adjacencies
-from pyscenic.aucell import aucell, derive_auc_threshold
-from pyscenic.prune import prune2df, df2regulons
 
 # modules in self project
 from .scoexp import ScoexpMatrix
 from .network import Network
 
 
-def before_cistarget(tfs: list, modules: Sequence[Regulon], prefix: str):
+def before_cistarget(tfs: list, modules, prefix: str):
     """
     Detect genes that were generated in the get_modules step
     :param tfs:
@@ -374,6 +366,7 @@ class InferNetwork(Network):
         :return:
         """
         db_fnames = glob.glob(database_dir)
+        from ctxcore.rnkdb import FeatherRankingDatabase as RankingDatabase
         dbs = [RankingDatabase(fname=fname, name=_name(fname)) for fname in db_fnames]
         return dbs
 
@@ -414,6 +407,7 @@ class InferNetwork(Network):
         if num_workers is None:
             num_workers = cpu_count()
         custom_client = _set_client(num_workers)
+        from arboreto.algo import grnboost2
         adjacencies = grnboost2(matrix,
                                 tf_names=tf_names,
                                 gene_names=genes,
@@ -521,7 +515,7 @@ class InferNetwork(Network):
                     matrix,
                     rho_mask_dropouts: bool = False,
                     prefix: str = 'exp',
-                    **kwargs) -> Sequence[Regulon]:
+                    **kwargs) :
         """
         Create of co-expression modules
         :param adjacencies:
@@ -533,6 +527,7 @@ class InferNetwork(Network):
         :param prefix:
         :return:
         """
+        from pyscenic.utils import modules_from_adjacencies
         modules = list(
             modules_from_adjacencies(adjacencies, matrix, rho_mask_dropouts=rho_mask_dropouts, **kwargs)
         )
@@ -546,7 +541,7 @@ class InferNetwork(Network):
     #            step3:  FILTER TFS AND TARGETS             #
     # ------------------------------------------------------#
     def prune_modules(self,
-                      modules: Sequence[Regulon],
+                      modules,
                       dbs: list,
                       motif_anno_fn: str,
                       num_workers: int,
@@ -579,6 +574,7 @@ class InferNetwork(Network):
         :param kwargs:
         :return: A dataframe.
         """
+        from pyscenic.prune import prune2df, df2regulons
         if cache and os.path.isfile(fn):
             df = self.read_motif_file(fn)
             regulon_list = df2regulons(df)
@@ -618,7 +614,7 @@ class InferNetwork(Network):
     # ------------------------------------------------------#
     def cal_auc(self,
                 matrix,
-                regulons: Sequence[Type[GeneSignature]],
+                regulons,
                 auc_threshold: float,
                 num_workers: int,
                 noweights: bool = False,
@@ -655,6 +651,7 @@ class InferNetwork(Network):
         if num_workers is None:
             num_workers = cpu_count()
 
+        from pyscenic.aucell import aucell
         auc_mtx = aucell(matrix,
                          regulons,
                          auc_threshold=auc_threshold,
@@ -681,6 +678,7 @@ class InferNetwork(Network):
             print('receptor dict not found. run_all get_receptors first.')
             return
         # 1. create new modules
+        from ctxcore.genesig import Regulon, GeneSignature
         receptor_modules = list(
             map(
                 lambda x: GeneSignature(
@@ -692,10 +690,12 @@ class InferNetwork(Network):
         )
         ex_matrix = self.data.to_df()
         if auc_threshold is None:
+            from pyscenic.aucell import derive_auc_threshold
             percentiles = derive_auc_threshold(ex_matrix)
             a_value = percentiles[p_range]
         else:
             a_value = auc_threshold
+        from pyscenic.aucell import aucell
         receptor_auc_mtx = aucell(ex_matrix, receptor_modules, auc_threshold=a_value, num_workers=num_workers)
         self.data.obsm['rep_auc_mtx'] = receptor_auc_mtx
         return receptor_auc_mtx

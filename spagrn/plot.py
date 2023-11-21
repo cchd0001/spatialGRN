@@ -23,8 +23,8 @@ import scanpy as sc
 import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import Optional
-from pyscenic.rss import regulon_specificity_scores
 import matplotlib as mpl
+
 mpl.rcParams['pdf.fonttype'] = 42
 mpl.rcParams['ps.fonttype'] = 42
 mpl.rcParams['svg.fonttype'] = 'none'
@@ -367,6 +367,7 @@ def auc_heatmap(data: anndata.AnnData,
 
     # Regulon specificity scores (RSS) across predicted cell types
     if rss_fn is None:
+        from pyscenic.rss import regulon_specificity_scores
         rss_cellType = regulon_specificity_scores(auc_mtx, data.obs[cluster_label])
     else:
         rss_cellType = pd.read_csv(rss_fn, index_col=0)
@@ -460,6 +461,7 @@ def auc_heatmap_uneven(data: anndata.AnnData,
 
     # Regulon specificity scores (RSS) across predicted cell types
     if rss_fn is None:
+        from pyscenic.rss import regulon_specificity_scores
         rss_cellType = regulon_specificity_scores(auc_mtx, data.obs[cluster_label])
     else:
         rss_cellType = pd.read_csv(rss_fn, index_col=0)
@@ -543,6 +545,7 @@ def auc_heatmap_reorder(data: anndata.AnnData,
 
     # Regulon specificity scores (RSS) across predicted cell types
     if rss_fn is None:
+        from pyscenic.rss import regulon_specificity_scores
         rss_cellType = regulon_specificity_scores(auc_mtx, data.obs[cluster_label])
     else:
         rss_cellType = pd.read_csv(rss_fn, index_col=0)
@@ -603,6 +606,7 @@ def generate_plot_data(data, auc_mtx, cluster_label, mode='mean', subset=False, 
 
     # Regulon specificity scores (RSS) across predicted cell types
     if rss_fn is None:
+        from pyscenic.rss import regulon_specificity_scores
         rss_cellType = regulon_specificity_scores(auc_mtx, data.obs[cluster_label])
     else:
         rss_cellType = pd.read_csv(rss_fn, index_col=0)

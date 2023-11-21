@@ -14,11 +14,6 @@ import pandas as pd
 import scanpy as sc
 import numpy as np
 import anndata as an
-from typing import Sequence
-
-from ctxcore.genesig import Regulon
-from pyscenic.rss import regulon_specificity_scores
-
 
 def remove_all_zero(auc_mtx):
     # check if there were regulons contain all zero auc values
@@ -291,7 +286,7 @@ class Network:
         return unique_adj_genes
 
     @staticmethod
-    def get_regulon_dict(regulon_list: Sequence[Regulon]) -> dict:
+    def get_regulon_dict(regulon_list) -> dict:
         """
         Form dictionary of { TF : Target } pairs from Regulons.
         :param regulon_list:
@@ -326,6 +321,7 @@ class Network:
         :param cluster_label:
         :return:
         """
+        from pyscenic.rss import regulon_specificity_scores
         rss_cellType = regulon_specificity_scores(self.auc_mtx, self.data.obs[cluster_label])
         if save_tmp:
             rss_cellType.to_csv(fn)
